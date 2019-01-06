@@ -1,48 +1,45 @@
 grammar MiniJava;
 
-goal                :   mainClass classDeclaration* EOF;
+goal : mainClass (classDeclaration)* ;
 
-mainClass           :   'class' Identifier '{' 'public' 'static' 'void' 'main' '(' 'String' '[' ']' Identifier ')' '{' statement '}' '}';
+mainClass : 'class' Identifier '{' 'public' 'static' 'void' 'main' '(' 'String' '[' ']' Identifier ')' '{' statement '}' '}' ;
 
-classDeclaration    :   'class' Identifier ( 'extends' Identifier )? '{' varDeclaration* methodDeclaration* '}';
+classDeclaration: 'class' Identifier ( 'extends' Identifier )? '{' ( varDeclaration )* ( methodDeclaration )* '}' ;
 
-methodDeclaration   :   'public' type Identifier '(' parameterList? ')' '{' varDeclaration* statement* 'return' expression ';' '}';
+varDeclaration: thetype Identifier ';';
 
-type                :    'int'
-                    |    'int' '[' ']'
-                    |    'boolean'
-                    |    Identifier;
+methodDeclaration: 'public' thetype Identifier '(' ( thetype Identifier ( ',' thetype Identifier )* )? ')' '{' ( varDeclaration )* ( statement )* 'return' expression ';' '}' ;
 
-statement           :    '{' statement* '}'
-                    |    'if' '(' expression ')' statement 'else' statement
-                    |    'while' '(' expression ')' statement
-                    |    'System.out.println' '(' expression ')' ';'
-                    |    Identifier '=' expression ';'
-                    |    Identifier '[' expression ']' '=' expression ';';
+thetype: 'int' '[' ']' #INTARRAY
+|   'boolean' #BOOL
+|   'int' #INT
+|   Identifier #ID
+    ;
 
-expression          :    expression '.length'
-                    |    expression '[' expression ']'
-                    |    expression '.' Identifier '(' ( expression ( ',' expression )* )? ')'
-                    |    expression Relation expression
-                    |    'this'
-                    |    'new' 'int' '[' expression ']'
-                    |    'new' Identifier '(' ')'
-                    |    '!' expression
-                    |    '(' expression ')'
-                    |    IntegerLiteral
-                    |    Decimal
-                    |    Boolean
-                    |    Identifier;
+expression:    expression '[' expression ']' # ARRAYSEARCH
+|   expression '.' 'length' # LENGTH
+|   expression '.' Identifier '(' ( expression ( ',' expression )* )? ')' # FUNCTION
+|   expression op=( '&&' | '<' | '+' | '-' | '*' ) expression # BIOP
+|   BOOL = ('true' | 'false') # BOOLLIT
+|   IntergerLiteral # INTLIT
+|   Identifier # VAR
+|   'this' # THIS
+|   'new' 'int' '[' expression ']' # NEWINT
+|   'new' Identifier '(' ')' # NEWID
+|   '!' expression #NOT
+|   '(' expression ')' #BRACKET
+;
 
-parameter           :   type Identifier;
-varDeclaration      :   type Identifier ';';
-parameterList       :   parameter (',' parameter)*;
+statement : '{' ( statement )* '}' #CURLYBRACKET
+|   'if' '(' expression ')' statement 'else' statement #IFELSE
+|   'while' '(' expression ')' statement #WHILE
+|   'System.out.println' '(' expression ')' ';' #PRINT
+|   Identifier '=' expression ';' #ASSIGN
+|   Identifier '[' expression ']' '=' expression ';' #ARRAYASSIGN
+    ;
 
-Identifier          :   [a-zA-Z_][0-9a-zA-Z_]*;
-Boolean             :   'true' | 'false';
-Relation            :   '**' | '*' | '/' | '+' | '-' | '>' | '<' | '=' | '&&' | '||';
-IntegerLiteral      :   '0' | [1-9][0-9]*;
-Decimal             :   IntegerLiteral? '.' [0-9]*;
-WhiteSpace          :   [ \r\t\n]+ -> skip;
-MULTILINE_COMMENT   :   '/*' .*? '*/' -> skip;
-LINE_COMMENT        :   '//' .*? '\n' -> skip;
+WS : [ \t\r\n]+ -> skip ;
+IntergerLiteral : ([1-9][0-9]*|[0]);
+Identifier : [a-zA-Z_] [a-zA-Z0-9_]*;
+Comment : '/*' .*? '*/' -> skip ;
+LineComment : '//' ~[\r\n]* -> skip ; 
