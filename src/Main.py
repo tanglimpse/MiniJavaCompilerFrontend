@@ -7,13 +7,16 @@ import sys
 
 
 def main(argv):
-
-    print ("First get the input file")
+    if len(argv) != 2:
+        print ("Command Wrong! Please use like: python src/Main.py src/tests/xxxxx.java")
+    print("First get the input file...")
     texts = FileStream(argv[1])
+    print("Processing texts by MiniJavaLexer and MiniJavaParser...")
     lexer = MiniJavaLexer(texts)
     stream = CommonTokenStream(lexer)
     parser = MiniJavaParser(stream)
     tree = parser.goal()
+    print("Print the string tree:")
     print(tree.toStringTree(recog=parser))
 
 if __name__ == "__main__":
